@@ -8,6 +8,11 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const axios = require("axios");
 const { errorHandler } = require("./middleware/errorMiddleware.js");
+//========================================================================
+const WebSocketServer = require("./servers/WebSocketServer");
+const PostbackHandler = require("./handlers/PostbackHandler");
+//========================================================================
+
 const { getCountryCode } = require("./countryCodes.js");
 const { createPurchaseEvent } = require("./controllers/purchaseControllers.js");
 const { createLeadEvent } = require("./controllers/leadControllers.js");
@@ -79,6 +84,20 @@ const defaultRequestURL = process.env.DEFAULT_REQUEST_URL;
 app.use("/lead", leadRoutes);
 app.use("/purchase", purchaseRoutes);
 app.use("/user", userRoutes);
+
+//====={server}===========================================
+const server = app.listen(PORT, () => {
+  console.log(`Server Running on port ${PORT}`);
+});
+
+mongoose
+  .connect(process.env.MONGO_URL)
+  .then(() => {
+    server;
+  })
+  .catch((err) => console.log(err));
+
+//=============================================================
 
 function hashData(data) {
   if (!data) return null;
@@ -208,6 +227,15 @@ app.get("/register", registerUser);
 app.get("/create_facebook_purchase_event", createPurchaseEvent);
 //https://www.wingsofflimits.pro/create_facebook_leads_event?fbclid={subid}&external_id={subid}&campaign_name={campaign_name}&campaign_id={campaign_id}&=true&visitor_code={visitor_code}&user_agent={user_agent}&ip={ip}&offer_id={offer_id}&os={os}&region={region}&city={city}&source={source}
 app.get("/create_facebook_leads_event", createLeadEvent);
+
+const wsServer = new WebSocketServer(server);
+const postbackHandler = new PostbackHandler(wsServer);
+app.get("/appsFlyer_purchase_events", (req, res) =>
+  postbackHandler.handle(req, res, "purchase")
+);
+app.get("/appsFlyer_leads_events", (req, res) =>
+  postbackHandler.handle(req, res, "leads")
+);
 
 //test events
 //https://www.wingsofflimits.pro/create_facebook_purchase_event?fbclid=37cionlfj9cd&external_id=37cionlfj9cd&campaign_name=iOS+46%2F+Wings+Off+Limits+%2F+Оффер&campaign_id={campaign_id}&=true&visitor_code={visitor_code}&user_agent={user_agent}&ip={ip}&offer_id={offer_id}&os={os}&region={region}&city={city}&source={source}
@@ -388,14 +416,14 @@ app.get("/facebook_event_notification", async (req, res) => {
   }
 });
 
-//====={server}===========================================
-const server = app.listen(PORT, () => {
-  console.log(`Server Running on port ${PORT}`);
-});
+// //====={server}===========================================
+// const server = app.listen(PORT, () => {
+//   console.log(`Server Running on port ${PORT}`);
+// });
 
-mongoose
-  .connect(process.env.MONGO_URL)
-  .then(() => {
-    server;
-  })
-  .catch((err) => console.log(err));
+// mongoose
+//   .connect(process.env.MONGO_URL)
+//   .then(() => {
+//     server;
+//   })
+//   .catch((err) => console.log(err));

@@ -18,6 +18,7 @@ const DEV_KEY = process.env.APPSFLYER_DEV_KEY; //'YOUR_DEV_KEY';
 // Lead
 // https://www.aerorescuers.pro/create_facebook_leads_event?fbclid=37cionlfj9cd&external_id=37cionlfj9cd&campaign_name=iOS+46+%2F+Wings+Off+Limits+%2F+%D0%9E%D1%84%D1%84%D0%B5%D1%80&campaign_id=345&=true&visitor_code=37cionl&user_agent=Mozilla%2F5.0+%28iPhone%3B+CPU+iPhone+OS+17_5_1+like+Mac+OS+X%29+AppleWebKit%2F605.1.15+%28KHTML%2C+like+Gecko%29+Mobile%2F15E148&ip=37.110.31.236&offer_id=910&os=iOS&region=NL_ZH&city=Naaldwijk
 
+
 function hashData(data) {
   if (!data) return null;
   return crypto
@@ -63,7 +64,7 @@ const leadEvent = {
 //   "http://localhost:4000/create_facebook_leads_event?fbclid=37cionlfj9cd&external_id=37cionlfj9cd&campaign_name=iOS+46+%2F+Wings+Off+Limits+%2F+%D0%9E%D1%84%D1%84%D0%B5%D1%80&campaign_id=345&=true&visitor_code=37cionl&user_agent=Mozilla%2F5.0+%28iPhone%3B+CPU+iPhone+OS+17_5_1+like+Mac+OS+X%29+AppleWebKit%2F605.1.15+%28KHTML%2C+like+Gecko%29+Mobile%2F15E148&ip=185.250.45.208&offer_id=910&os=iOS&region=NL_ZH&city=Naaldwijk&source=";
 
 const leadURL =
-  "http://localhost:4000/create_facebook_leads_event?fbclid=37cionlfj9cd&external_id=37cionlfj9cd&campaign_name=iOS+46+%2F+Wings+Off+Limits+%2F+%D0%9E%D1%84%D1%84%D0%B5%D1%80&campaign_id=345&=true&visitor_code=37cionl&user_agent=Mozilla%2F5.0+%28iPhone%3B+CPU+iPhone+OS+17_5_1+like+Mac+OS+X%29+AppleWebKit%2F605.1.15+%28KHTML%2C+like+Gecko%29+Mobile%2F15E148&ip=37.110.31.236&offer_id=910&os=iOS&region=NL_ZH&city=Naaldwijk";
+  "http://localhost:4000/create_facebook_leads_event?fbclid=37cionlfj9cd&external_id=37cionlfj9cd&campaign_name=iOS+46+%2F+Wings+Off+Limits+%2F+%D0%9E%D1%84%D1%84%D0%B5%D1%80&campaign_id=345&=true&visitor_code=37cionl&user_agent=Mozilla%2F5.0+%28iPhone%3B+CPU+iPhone+OS+17_5_1+like+Mac+OS+X%29+AppleWebKit%2F605.1.15+%28KHTML%2C+like+Gecko%29+Mobile%2F15E148&ip=::ffff:127.0.0.1&offer_id=910&os=iOS&region=NL_ZH&city=Naaldwijk&source=";
 
 const createLeadEvent = async (req, res) => {
   try {
@@ -193,25 +194,10 @@ const deleteLeadEvent = async (req, res) => {
  * _id
  */
 
-/**
- * 
-att
-integer
-iOS ATTrackingManager authorization status
-
-If the device OS version is iOS 14 or later, populate attwith ATTrackingManager.
-The iOS values for ATTrackingManager are:
-0: Not determined
-1: Restricted
-2: Denied
-3: Authorize
- */
-
 const sendFacebookLeadEventByAppsFlyer = async (leadData, user) => {
   //===={get user}=====================
 
   if (user) {
-    console.log("user exists");
     const leadEvent = {
       appsflyer_id: leadData.appsflyer_id, // appsflyer_id
       idfa: user.advertiserTrackingId ? user.advertiserTrackingId : user._id, // advertiser_tracking_id or user_id
@@ -223,10 +209,8 @@ const sendFacebookLeadEventByAppsFlyer = async (leadData, user) => {
       eventCurrency: "USD", // Assuming default currency for leads
       eventTime: new Date().toISOString(),
       ip: leadData.ip,
-      bundleIdentifier: process.env.BUNDLE_IDENTIFYER,
-      att: 3,
     };
-    console.log({ leadEvent });
+
     await sendEventToAppsFlyer(leadEvent);
   } else {
     const advertiser_tracking_id = process.env.CUSTOM_ADVERTISER_TRACKING_ID;
@@ -255,7 +239,6 @@ const sendEventToAppsFlyer = async (eventData) => {
     const response = await axios.post(APPSFLYER_URL, eventData, {
       headers: {
         "Content-Type": "application/json",
-        accept: "application/json",
         authentication: DEV_KEY,
       },
     });
