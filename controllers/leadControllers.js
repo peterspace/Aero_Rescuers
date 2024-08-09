@@ -244,6 +244,8 @@ const sendFacebookLeadEventByAppsFlyer = async (leadData, user) => {
       eventCurrency: "USD", // Assuming default currency for leads
       eventTime: new Date().toISOString(),
       ip: custom_ip,
+      bundleIdentifier: process.env.BUNDLE_IDENTIFYER,
+      att: 3,
     };
 
     await sendEventToAppsFlyer(leadEvent);
